@@ -16,12 +16,8 @@ def get_requirement(file_path:str)->List[str]:
             requirements.remove(HYPHEN_E_DOT)
     return requirements
 
-setup(
-name = 'mlproject',
-version= '0.0.1'
-author = 'SankyTanky'
-author_email=140347750+Sankytanky100@users.noreply.github.com
-packages=find_packages()
-install_requires =get_requirements('requirements.txt')
-
-)
+setup (name = 'mlproject',version= '0.0.1',
+author = 'SankyTanky',
+author_email="140347750+Sankytanky100@users.noreply.github.com",
+packages=find_packages(),
+install_requires =get_requirement('requirements.txt'))
