@@ -1,33 +1,37 @@
-import sys
-from src.utils.logger import logging
+"""Custom exception helpers used across the ML pipeline."""
 
-def error_message_detail(error,error_detail:sys):
-    _,_,exc_tb=error_detail.exc_info()
-    file_name=exc_tb.tb_frame.f_code.co_filename
-    error_message="Error occured in python script name [{0}] line number [{1}] error message[{2}]".format(
-     file_name,exc_tb.tb_lineno,str(error))
+from __future__ import annotations
 
-    return error_message
+from typing import Tuple
 
-    
+
+def error_message_detail(error: Exception | str, error_detail: Tuple[object, object, object]) -> str:
+    """Build a rich error message that includes the filename and line number.
+
+    Args:
+        error: The original exception or a message string.
+        error_detail: The tuple returned by ``sys.exc_info()``.
+
+    Returns:
+        A formatted error message string.
+    """
+    _, _, exc_tb = error_detail
+    if exc_tb is None:
+        return f"Error occurred: {error}"
+
+    file_name = exc_tb.tb_frame.f_code.co_filename
+    return (
+        "Error occurred in python script name "
+        f"[{file_name}] line number [{exc_tb.tb_lineno}] error message[{error}]"
+    )
+
 
 class CustomException(Exception):
-    def __init__(self,error_message,error_detail:sys):
-        super().__init__(error_message)
-        self.error_message=error_message_detail(error_message,error_detail=error_detail)
-    
-    def __str__(self):
+    """Exception that enriches errors with file and line information."""
+
+    def __init__(self, error: Exception | str, error_detail: Tuple[object, object, object]) -> None:
+        super().__init__(str(error))
+        self.error_message = error_message_detail(error, error_detail=error_detail)
+
+    def __str__(self) -> str:
         return self.error_message
-    
-
-
-        
-
-# Example usage
-#if __name__ == "__main__":
-    #try:
-        # Simulate an error
-        #x = 1 / 0
-    #except Exception as e:
-        # Raise CustomException with detailed error message
-        #raise CustomException(e, sys.exc_info())
