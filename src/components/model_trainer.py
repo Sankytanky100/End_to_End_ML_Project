@@ -1,6 +1,11 @@
+"""Model training component for the student performance dataset."""
+
+from __future__ import annotations
+
 import os
 import sys
 from dataclasses import dataclass
+from typing import Dict
 
 from catboost import CatBoostRegressor
 from sklearn.ensemble import (
@@ -17,18 +22,23 @@ from xgboost import XGBRegressor
 from src.utils.exception import CustomException
 from src.utils.logger import logging
 
-from src.utils.utils import save_object,evaluate_models
+from src.utils.utils import evaluate_models, save_object
 
 @dataclass
 class ModelTrainerConfig:
-    trained_model_file_path=os.path.join("artifacts","model.pkl")
+    """Configuration for model training artifacts."""
+
+    trained_model_file_path: str = os.path.join("artifacts", "model.pkl")
 
 class ModelTrainer:
+    """Trains multiple regressors and persists the best model."""
+
     def __init__(self):
-        self.model_trainer_config=ModelTrainerConfig()
+        self.model_trainer_config = ModelTrainerConfig()
 
 
-    def initiate_model_trainer(self,train_array,test_array):
+    def initiate_model_trainer(self, train_array, test_array) -> float:
+        """Train candidate models and return the best R2 score."""
         try:
             logging.info("Split training and test input data")
             X_train, y_train, X_test, y_test = (
@@ -89,7 +99,7 @@ class ModelTrainer:
             model_report = evaluate_models(X_train=X_train, y_train=y_train, X_test=X_test, y_test=y_test, models=models, param = params)
             
             ## To get best model score from dict
-            best_model_score = max(sorted(model_report.values()))
+            best_model_score = max(model_report.values())
 
             ## To get best model name from dict
 
@@ -99,7 +109,7 @@ class ModelTrainer:
             best_model = models[best_model_name]
 
             if best_model_score<0.6:
-                raise CustomException("No best model found")
+                raise CustomException("No best model found", sys.exc_info())
             logging.info(f"Best found model on both training and testing dataset")
 
             save_object(
@@ -115,4 +125,4 @@ class ModelTrainer:
             return r2_square
             
         except Exception as e:
-            raise CustomException(e,sys)
+            raise CustomException(e, sys.exc_info()) from e
